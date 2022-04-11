@@ -13,7 +13,6 @@ import org.hamcrest.Matcher
 import org.hamcrest.Matchers
 
 private const val CLASS_REACT_SLIDER_LEGACY = "com.facebook.react.views.slider.ReactSlider"
-private const val CLASS_REACT_SLIDER_COMMUNITY = "com.reactnativecommunity.slider.ReactSlider"
 
 class AdjustSliderToPositionAction(private val desiredPosition: Double) : ViewAction {
 
@@ -32,12 +31,14 @@ class AdjustSliderToPositionAction(private val desiredPosition: Double) : ViewAc
         val sliderProgress = when {
             (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) ->
                 (view as ReactSlider).toRealProgress(view.progress)
-            (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) ->
-                (view as com.reactnativecommunity.slider.ReactSlider).toRealProgress(view.progress)
+            (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) -> {
+                val progressValue = CommunityReactSliderReflected.invokeGetProgressMethod(view)
+                CommunityReactSliderReflected.invokeToRealProgressMethod(view, progressValue)
+            }
             else -> (view as ReactSlider).toRealProgress(view.progress)
         }
         val sliderScrollFactor = castView.max / view.progress.toDouble()
-        val sliderMaxValue = sliderProgress * sliderScrollFactor
+        val sliderMaxValue: Double = sliderProgress * sliderScrollFactor
         return desiredPosition * sliderMaxValue
     }
 
@@ -49,8 +50,7 @@ class AdjustSliderToPositionAction(private val desiredPosition: Double) : ViewAc
             reactSliderManager.updateProperties(view as ReactSlider, buildStyles("value", progressNewValue))
         }
         else if (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) {
-            val reactSliderManager = com.reactnativecommunity.slider.ReactSliderManager()
-            reactSliderManager.setValue(view as com.reactnativecommunity.slider.ReactSlider, progressNewValue)
+            CommunityReactSliderManagerReflected.invokeSetValue(view, progressNewValue)
         }
     }
 }

@@ -8,6 +8,8 @@ import androidx.test.espresso.matcher.BoundedMatcher
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import com.facebook.react.views.slider.ReactSlider
+import com.wix.detox.espresso.action.CLASS_REACT_SLIDER_COMMUNITY
+import com.wix.detox.espresso.action.CommunityReactSliderReflected
 import com.wix.detox.espresso.action.common.ReflectUtils
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
@@ -20,7 +22,6 @@ import org.hamcrest.TypeSafeMatcher
  */
 
 private const val CLASS_REACT_SLIDER_LEGACY = "com.facebook.react.views.slider.ReactSlider"
-private const val CLASS_REACT_SLIDER_COMMUNITY = "com.reactnativecommunity.slider.ReactSlider"
 
 fun isOfClassName(className: String): Matcher<View> {
     try {
@@ -62,17 +63,19 @@ fun toHaveSliderPosition(expectedValue: Double, tolerance: Double): Matcher<View
         override fun matchesSafely(view: View?): Boolean {
             val castView = view as AppCompatSeekBar
             val currentProgress = castView.progress
-            val sliderProgress = when {
+            val sliderProgress: Double = when {
                 (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) ->
                     (view as ReactSlider).toRealProgress(currentProgress)
-                (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) ->
-                    (view as com.reactnativecommunity.slider.ReactSlider).toRealProgress(currentProgress)
+                (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) -> {
+                    CommunityReactSliderReflected.invokeToRealProgressMethod(view, currentProgress)
+                }
                 else -> (view as ReactSlider).toRealProgress(currentProgress)
             }
             val currentPctFactor = castView.max / currentProgress.toDouble()
-            val realTotal = sliderProgress * currentPctFactor
-            val actualValue = sliderProgress / realTotal
+            val realTotal: Double = sliderProgress * currentPctFactor
+            val actualValue: Double = sliderProgress / realTotal
             return Math.abs(actualValue - expectedValue) <= tolerance
         }
     }
 }
+

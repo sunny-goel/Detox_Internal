@@ -12,7 +12,7 @@ import org.mockito.kotlin.*
 @Suppress("IllegalIdentifier")
 class AdjustSliderToPositionActionTest {
     val mockReactSliderManager: ReactSliderManager = mock()
-    var uut: AdjustSliderToPositionAction = spy(AdjustSliderToPositionAction(0.25))
+    var uut: AdjustSliderToPositionAction = spy(AdjustSliderToPositionAction(0.25, mockReactSliderManager))
     private lateinit var mockReactSlider: ReactSlider
 
     @Before
@@ -44,13 +44,13 @@ class AdjustSliderToPositionActionTest {
     }
 
     @Test
-    fun `should change progress of slider`() {
+    fun `should change progress of legacy slider`() {
         val mockReactSliderManager: ReactSliderManager = mock {
             on{updateProperties(any(), any())}.thenAnswer{
                 doReturn(750).whenever(mockReactSlider).progress
             }
         }
-        uut = spy(AdjustSliderToPositionAction(0.75))
+        uut = spy(AdjustSliderToPositionAction(0.75, mockReactSliderManager))
         uut.perform(null, mockReactSlider)
 
         verify(mockReactSliderManager, times(1)).updateProperties(any(), any())

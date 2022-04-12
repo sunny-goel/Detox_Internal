@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.ProgressBar
 import android.widget.TextView
+import com.facebook.react.views.slider.ReactSlider
 import com.google.android.material.slider.Slider
 import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONObject
@@ -190,12 +191,12 @@ class GetAttributesActionTest {
 
     @Test
     fun `should return Slider state through value attribute`() {
-        val slider: Slider = mock {
-            on { value } doReturn 0.42f
+        val slider: ReactSlider = mock {
+            on { progress } doReturn 42
         }
 
         val resultJson = perform(slider)
-        assertThat(resultJson.opt("value")).isEqualTo(0.42)
+        assertThat(resultJson.opt("value")).isEqualTo(42)
     }
 
     @Test

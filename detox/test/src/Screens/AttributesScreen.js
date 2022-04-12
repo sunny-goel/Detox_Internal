@@ -54,8 +54,8 @@ export default class AttributesScreen extends Component {
           style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, marginHorizontal: 20, padding: 5 }}
           autoFocus={false}
         />
-        <LegacySlider testID={'legacySliderId'} value={0.5} />
-        <Slider testID={'sliderId'} value={0.5} />
+        <LegacySlider testID={'legacySliderId'} minimumValue={0} maximumValue={1} value={0.5} />
+        <Slider testID={'sliderId'} minimumValue={0} maximumValue={1} value={0.5} />
       </View>
     );
   }

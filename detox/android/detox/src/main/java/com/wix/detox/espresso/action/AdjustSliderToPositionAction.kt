@@ -8,13 +8,14 @@ import androidx.test.espresso.matcher.ViewMatchers
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.views.slider.ReactSlider
+import com.facebook.react.views.slider.ReactSliderManager
 import com.wix.detox.espresso.action.common.ReflectUtils
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
 
 private const val CLASS_REACT_SLIDER_LEGACY = "com.facebook.react.views.slider.ReactSlider"
 
-class AdjustSliderToPositionAction(private val desiredPosition: Double) : ViewAction {
+class AdjustSliderToPositionAction(private val desiredPosition: Double, private val mManager: ReactSliderManager) : ViewAction {
 
     override fun getConstraints(): Matcher<View?>? = Matchers.allOf(
         ViewMatchers.isAssignableFrom(AppCompatSeekBar::class.java),
@@ -46,8 +47,7 @@ class AdjustSliderToPositionAction(private val desiredPosition: Double) : ViewAc
         val progressNewValue = calculateProgressTarget(view)
 
         if (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) {
-            val reactSliderManager = com.facebook.react.views.slider.ReactSliderManager()
-            reactSliderManager.updateProperties(view as ReactSlider, buildStyles("value", progressNewValue))
+            mManager.updateProperties(view as ReactSlider, buildStyles("value", progressNewValue))
         }
         else if (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) {
             CommunityReactSliderManagerReflected.invokeSetValue(view, progressNewValue)

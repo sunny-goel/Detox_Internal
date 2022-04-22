@@ -4,35 +4,31 @@ const util = require('util');
 
 const _ = require('lodash');
 
-const configuration = require('../../../src/configuration');
-const DeviceRegistry = require('../../../src/devices/DeviceRegistry');
-const GenyDeviceRegistryFactory = require('../../../src/devices/allocation/drivers/android/genycloud/GenyDeviceRegistryFactory');
-const ipcServer = require('../ipc/server');
-const DetoxServer = require('../../../src/server/DetoxServer');
-const logger = require('../../../src/utils/logger');
-const log = logger.child({ __filename });
+const configuration = require('../../src/configuration');
+const DeviceRegistry = require('../../src/devices/DeviceRegistry');
+const GenyDeviceRegistryFactory = require('../../src/devices/allocation/drivers/android/genycloud/GenyDeviceRegistryFactory');
+const NullLogger = require('../../src/logger/NullLogger');
+const DetoxServer = require('../../src/server/DetoxServer');
+
+const BunyanLogger = require('./BunyanLogger');
+const IPCServer = require('./IPCServer');
 
 class DetoxRootContext {
-  constructor(config) {
-    this._deviceConfig = config.deviceConfig;
-    this._sessionConfig = config.sessionConfig;
-    this._cliConfig = config.cliConfig;
-
+  constructor() {
+    this._config = null;
     this._wss = null;
+    this._ipc = null;
+    this._logger = new NullLogger();
 
     this.setup = this.setup.bind(this);
     this.teardown = this.teardown.bind(this);
   }
 
   async setup({ argv }) {
-    const detoxConfig = await configuration.composeDetoxConfig({ argv });
-    await ipcServer.start({
-      sessionId: `detox-${process.pid}`,
-      detoxConfig,
-    });
+    this._config = await configuration.composeDetoxConfig({ argv });
 
     try {
-      await this._doSetup(detoxConfig);
+      await this._doSetup();
     } catch (e) {
       await this.teardown();
       throw e;
@@ -40,14 +36,38 @@ class DetoxRootContext {
   }
 
   async teardown() {
+    if (this._ipc) {
+      await this._ipc.stop();
+    }
+
     if (this._wss) {
       await this._wss.close();
       this._wss = null;
     }
+
+    // TODO: move the artifacts
   }
 
-  async _doSetup(config) {
-    log.trace(
+  get config() {
+    return this._config;
+  }
+
+  get log() {
+    return this._logger;
+  }
+
+  get lastFailedTests() {
+    // TODO: retrieve from IPC
+    return [];
+  }
+
+  async _doSetup() {
+    const config = this._config;
+    this._logger = new BunyanLogger({
+      loglevel: config.cliConfig.loglevel || 'info',
+    });
+
+    this.log.trace(
       { event: 'DETOX_CONFIG', config },
       'creating Detox server with config:\n%s',
       util.inspect(_.omit(config, ['errorComposer']), {
@@ -60,12 +80,18 @@ class DetoxRootContext {
       })
     );
 
+    this._ipc = new IPCServer({
+      sessionId: `detox-${process.pid}`,
+      detoxConfig: this._config,
+      logger: this._logger,
+    });
 
-    if (!this._cliConfig.keepLockFile) {
+    await this._ipc.start();
+    const { cliConfig, sessionConfig } = config;
+
+    if (!cliConfig.keepLockFile) {
       await this._resetLockFile();
     }
-
-    const sessionConfig = this._sessionConfig;
 
     this._wss = new DetoxServer({
       port: sessionConfig.server
@@ -79,13 +105,10 @@ class DetoxRootContext {
     if (!sessionConfig.server) {
       sessionConfig.server = `ws://localhost:${this._wss.port}`;
     }
-
-    // TODO: think if we need it to be encapsulated
-    process.env.DETOX_WSS_ADDRESS = sessionConfig.server;
   }
 
   async _resetLockFile() {
-    const deviceType = this._deviceConfig.type;
+    const deviceType = this._config.deviceConfig.type;
 
     switch (deviceType) {
       case 'ios.none':

@@ -1,3 +1,1 @@
-const { context } = require('../../realms/global');
-
-module.exports = context.teardown;
+module.exports = require('../../realms/runner').teardown;

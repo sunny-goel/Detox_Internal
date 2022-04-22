@@ -1,1 +1,1 @@
-module.exports = require('../../realms/global').DetoxReporter;
+module.exports = require('../../realms/runner').DetoxReporter;

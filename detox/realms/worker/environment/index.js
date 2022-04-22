@@ -1,13 +1,13 @@
 // @ts-nocheck
 const NodeEnvironment = require('jest-environment-node');
 
-const DetoxWorkerContext = require('../context/DetoxWorkerContext');
 const { DetoxError } = require('../../../src/errors');
 const ipcClient = require('../../../src/ipc/client');
+const Timer = require('../../../src/utils/Timer');
+const DetoxWorkerContext = require('../context/DetoxWorkerContext');
 
 const DetoxCoreListener = require('./listeners/DetoxCoreListener');
 const DetoxInitErrorListener = require('./listeners/DetoxInitErrorListener');
-const Timer = require('../../../src/utils/Timer');
 const assertExistingContext = require('./utils/assertExistingContext');
 const assertJestCircus26 = require('./utils/assertJestCircus26');
 const wrapErrorWithNoopLifecycle = require('./utils/wrapErrorWithNoopLifecycle');

@@ -18,11 +18,11 @@ module.exports = {
   },
 
   get globalSetup() {
-    return require('../../realms/global').context.setup;
+    return require('../../realms/runner').context.setup;
   },
 
   get globalTeardown() {
-    return require('../../realms/global').context.teardown;
+    return require('../../realms/runner').context.teardown;
   },
 
   //#endregion

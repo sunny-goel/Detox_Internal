@@ -1,4 +1,5 @@
 const _ = require('lodash');
+
 const ipcClient = require('../ipc/client');
 
 class IPCLogger {

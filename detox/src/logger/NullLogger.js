@@ -1,6 +1,10 @@
+// @ts-ignore
+const { red, yellow } = require('chalk');
+
+// TODO: implement it correctly
 class NullLogger {
   constructor(config) {
-    this._config = config;
+    this._config = config || {};
   }
 
   child(overrides) {
@@ -9,28 +13,28 @@ class NullLogger {
     );
   }
 
-  error() {
-    // no-op
+  error(msg) {
+    console.error(red(msg));
   }
 
-  warn() {
-    // no-op
+  warn(msg) {
+    console.error(yellow(msg));
   }
 
-  info() {
-    // no-op
+  info(msg) {
+    console.log(msg);
   }
 
-  debug() {
-    // no-op
+  debug(msg) {
+    console.log(msg);
   }
 
-  trace() {
-    // no-op
+  trace(msg) {
+    console.log(msg);
   }
 
   get level() {
-    return this._config.level; // ?
+    return 'trace';
   }
 }
 

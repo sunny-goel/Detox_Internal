@@ -1,3 +1,1 @@
-const { context } = require('../../realms/global');
-
-module.exports = context.setup;
+module.exports = require('../../realms/runner').setup;

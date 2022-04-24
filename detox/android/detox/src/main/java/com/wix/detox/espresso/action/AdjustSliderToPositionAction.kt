@@ -15,7 +15,9 @@ import org.hamcrest.Matchers
 
 private const val CLASS_REACT_SLIDER_LEGACY = "com.facebook.react.views.slider.ReactSlider"
 
-class AdjustSliderToPositionAction(private val desiredPosition: Double, private val mManager: ReactSliderManager) : ViewAction {
+class AdjustSliderToPositionAction(private val desiredPosition: Double, private val mManager: ReactSliderManager, private val reflectUtils: ReflectUtils) : ViewAction {
+    private val communityReactSliderReflected = CommunityReactSliderReflected()
+    private val communityReactSliderManagerReflected = CommunityReactSliderManagerReflected()
 
     override fun getConstraints(): Matcher<View?>? = Matchers.allOf(
         ViewMatchers.isAssignableFrom(AppCompatSeekBar::class.java),
@@ -30,11 +32,11 @@ class AdjustSliderToPositionAction(private val desiredPosition: Double, private 
     private fun calculateProgressTarget(view: View): Double {
         val castView = view as AppCompatSeekBar
         val sliderProgress = when {
-            (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) ->
+            (reflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) ->
                 (view as ReactSlider).toRealProgress(view.progress)
-            (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) -> {
-                val progressValue = CommunityReactSliderReflected.invokeGetProgressMethod(view)
-                CommunityReactSliderReflected.invokeToRealProgressMethod(view, progressValue)
+            (reflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) -> {
+                val progressValue = communityReactSliderReflected.invokeGetProgressMethod(view)
+                communityReactSliderReflected.invokeToRealProgressMethod(view, progressValue)
             }
             else -> (view as ReactSlider).toRealProgress(view.progress)
         }
@@ -46,11 +48,11 @@ class AdjustSliderToPositionAction(private val desiredPosition: Double, private 
     override fun perform(uiController: UiController?, view: View) {
         val progressNewValue = calculateProgressTarget(view)
 
-        if (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) {
+        if (reflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) {
             mManager.updateProperties(view as ReactSlider, buildStyles("value", progressNewValue))
         }
-        else if (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) {
-            CommunityReactSliderManagerReflected.invokeSetValue(view, progressNewValue)
+        else if (reflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) {
+            communityReactSliderManagerReflected.invokeSetValue(view, progressNewValue)
         }
     }
 }

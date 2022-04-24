@@ -13,6 +13,7 @@ import com.wix.detox.espresso.action.ScrollToIndexAction;
 import com.wix.detox.espresso.action.TakeViewScreenshotAction;
 import com.wix.detox.espresso.action.GetAttributesAction;
 import com.wix.detox.action.common.MotionDir;
+import com.wix.detox.espresso.action.common.ReflectUtils;
 import com.wix.detox.espresso.scroll.DetoxScrollAction;
 import com.wix.detox.espresso.scroll.DetoxScrollActionStaleAtEdge;
 import com.wix.detox.espresso.scroll.ScrollEdgeException;
@@ -152,7 +153,8 @@ public class DetoxAction {
 
     public static ViewAction adjustSliderToPosition(final double newPosition) {
         ReactSliderManager reactSliderManager = new ReactSliderManager();
-        return new AdjustSliderToPositionAction(newPosition, reactSliderManager);
+        ReflectUtils reflectUtils = new ReflectUtils();
+        return new AdjustSliderToPositionAction(newPosition, reactSliderManager, reflectUtils);
     }
 
     public static ViewAction takeViewScreenshot() {

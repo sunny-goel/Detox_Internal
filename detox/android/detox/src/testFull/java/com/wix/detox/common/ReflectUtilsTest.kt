@@ -10,15 +10,17 @@ import org.mockito.kotlin.*
 private const val TEST_CLASS = "com.facebook.react.views.slider.ReactSlider"
 
 class ReflectUtilsTest {
+    private val reflectUtils = ReflectUtils()
+
     @Test
     fun `should return true for match`() {
         val reactSlider: ReactSlider = mock()
-        assertThat(ReflectUtils.isObjectAssignableFrom(reactSlider, TEST_CLASS)).isEqualTo(true)
+        assertThat(reflectUtils.isObjectAssignableFrom(reactSlider, TEST_CLASS)).isEqualTo(true)
     }
 
     @Test
     fun `should return false for no match`() {
         val reactSlider: ReactSliderManager = mock()
-        assertThat(ReflectUtils.isObjectAssignableFrom(reactSlider, TEST_CLASS)).isEqualTo(false)
+        assertThat(reflectUtils.isObjectAssignableFrom(reactSlider, TEST_CLASS)).isEqualTo(false)
     }
 }

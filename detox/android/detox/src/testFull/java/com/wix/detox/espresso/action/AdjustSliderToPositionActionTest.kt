@@ -3,16 +3,17 @@ package com.wix.detox.espresso.action
 import android.view.View
 import com.facebook.react.views.slider.ReactSlider
 import com.facebook.react.views.slider.ReactSliderManager
+import com.wix.detox.espresso.action.common.ReflectUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matcher
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.*
 
-@Suppress("IllegalIdentifier")
 class AdjustSliderToPositionActionTest {
-    val mockReactSliderManager: ReactSliderManager = mock()
-    var uut: AdjustSliderToPositionAction = spy(AdjustSliderToPositionAction(0.25, mockReactSliderManager))
+    private val mockReflectUtils: ReflectUtils = mock()
+    private val mockReactSliderManager: ReactSliderManager = mock()
+    var uut: AdjustSliderToPositionAction = spy(AdjustSliderToPositionAction(0.25, mockReactSliderManager, mockReflectUtils))
     private lateinit var mockReactSlider: ReactSlider
 
     @Before
@@ -50,7 +51,11 @@ class AdjustSliderToPositionActionTest {
                 doReturn(750).whenever(mockReactSlider).progress
             }
         }
-        uut = spy(AdjustSliderToPositionAction(0.75, mockReactSliderManager))
+        val mockReflectUtils: ReflectUtils = mock {
+            on{isObjectAssignableFrom(any(), eq("com.facebook.react.views.slider.ReactSlider"))}
+                .thenReturn(true)
+        }
+        uut = spy(AdjustSliderToPositionAction(0.75, mockReactSliderManager, mockReflectUtils))
         uut.perform(null, mockReactSlider)
 
         verify(mockReactSliderManager, times(1)).updateProperties(any(), any())

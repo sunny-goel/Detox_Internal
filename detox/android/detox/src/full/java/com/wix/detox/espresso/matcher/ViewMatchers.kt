@@ -23,6 +23,9 @@ import org.hamcrest.TypeSafeMatcher
 
 private const val CLASS_REACT_SLIDER_LEGACY = "com.facebook.react.views.slider.ReactSlider"
 
+private val reflectUtils = ReflectUtils()
+private val communityReactSliderReflected = CommunityReactSliderReflected()
+
 fun isOfClassName(className: String): Matcher<View> {
     try {
         val cls = Class.forName(className)
@@ -64,10 +67,10 @@ fun toHaveSliderPosition(expectedValue: Double, tolerance: Double): Matcher<View
             val castView = view as AppCompatSeekBar
             val currentProgress = castView.progress
             val sliderProgress: Double = when {
-                (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) ->
+                (reflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_LEGACY)) ->
                     (view as ReactSlider).toRealProgress(currentProgress)
-                (ReflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) -> {
-                    CommunityReactSliderReflected.invokeToRealProgressMethod(view, currentProgress)
+                (reflectUtils.isObjectAssignableFrom(view, CLASS_REACT_SLIDER_COMMUNITY)) -> {
+                    communityReactSliderReflected.invokeToRealProgressMethod(view, currentProgress)
                 }
                 else -> (view as ReactSlider).toRealProgress(currentProgress)
             }
